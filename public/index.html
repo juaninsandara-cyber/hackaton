@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Dashboard</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #1a1a1a; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+        .header { margin-bottom: 40px; border-bottom: 1px solid #e0e0e0; padding-bottom: 30px; }
+        .header h1 { font-size: 32px; font-weight: 300; letter-spacing: 2px; }
+        .header p { font-size: 13px; color: #666; letter-spacing: 1px; margin-top: 8px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        .kpi-card { background: white; padding: 25px; border: 1px solid #e0e0e0; border-radius: 4px; }
+        .kpi-title { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+        .kpi-value { font-size: 28px; font-weight: 300; color: #1E3A8A; }
+        .kpi-change { font-size: 12px; color: #666; margin-top: 8px; }
+        .filters { background: white; padding: 25px; border: 1px solid #e0e0e0; border-radius: 4px; margin-bottom: 30px; }
+        .filter-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; margin-top: 15px; }
+        .filter-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+        .btn { padding: 8px 12px; border: 1px solid #ddd; background: white; cursor: pointer; font-size: 13px; border-radius: 3px; transition: all 0.2s; }
+        .btn.active { background: #1E3A8A; color: white; border-color: #1E3A8A; }
+        select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px; font-size: 13px; }
+        table { width: 100%; border-collapse: collapse; background: white; border: 1px solid #e0e0e0; }
+        th { padding: 15px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #999; border-bottom: 1px solid #e0e0e0; font-weight: 500; }
+        td { padding: 15px; border-bottom: 1px solid #e0e0e0; }
+        .text-right { text-align: right; }
+        .rotation { color: #1E3A8A; font-weight: 500; }
+        .up { color: #1E3A8A; }
+        .down { color: #ef4444; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script>
+        const e = React.createElement;
+        const { useState } = React;
+
+        function Dashboard() {
+            const [gender, setGender] = useState('all');
+            const [category, setCategory] = useState('all');
+            const [size, setSize] = useState('all');
+
+            const data = [
+                { id: 1, product: 'JEANS TERMINADOS', g: 'Mujer', s: 'M', sales: 480, rotation: 8.2, trend: 'up' },
+                { id: 2, product: 'CAMISAS', g: 'Hombre', s: 'L', sales: 320, rotation: 6.5, trend: 'up' },
+                { id: 3, product: 'PANTALONES', g: 'Mujer', s: 'S', sales: 290, rotation: 5.8, trend: 'up' },
+                { id: 4, product: 'BUZOS', g: 'Niño', s: '12', sales: 215, rotation: 4.2, trend: 'down' },
+                { id: 5, product: 'VESTIDOS', g: 'Niña', s: '8', sales: 245, rotation: 5.1, trend: 'up' },
+                { id: 6, product: 'PIJAMAS', g: 'Mujer', s: 'M', sales: 180, rotation: 3.8, trend: 'down' },
+            ];
+
+            const kpis = [
+                { title: 'Más Vendidos', value: '248', change: '+12.5%' },
+                { title: 'Stock Crítico', value: '34', change: '-8.2%' },
+                { title: 'Rotación Promedio', value: '6.8x', change: '+3.1%' },
+                { title: 'Total Inventario', value: '12,847', change: '+2.4%' },
+            ];
+
+            const filtered = data.filter(item => 
+                (gender === 'all' || item.g === gender) &&
+                (category === 'all' || item.product === category) &&
+                (size === 'all' || item.s === size)
+            );
+
+            return e('div', { style: { minHeight: '100vh' } },
+                e('div', { className: 'container' },
+                    e('div', { className: 'header' },
+                        e('h1', null, 'Inventory'),
+                        e('p', null, 'Análisis inteligente de rotación y stock')
+                    ),
+
+                    e('div', { className: 'kpi-grid' },
+                        kpis.map(kpi => e('div', { key: kpi.title, className: 'kpi-card' },
+                            e('div', { className: 'kpi-title' }, kpi.title),
+                            e('div', { className: 'kpi-value' }, kpi.value),
+                            e('div', { className: 'kpi-change' }, kpi.change)
+                        ))
+                    ),
+
+                    e('div', { className: 'filters' },
+                        e('div', { style: { fontSize: '11px', color: '#999', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '15px' } }, 'FILTROS'),
+                        e('div', { className: 'filter-row' },
+                            e('div', null,
+                                e('div', { style: { fontSize: '11px', color: '#999', marginBottom: '8px', letterSpacing: '1px', textTransform: 'uppercase' } }, 'Género'),
+                                e('div', { className: 'filter-buttons' },
+                                    ['all', 'Mujer', 'Hombre', 'Niño', 'Niña'].map(g =>
+                                        e('button', {
+                                            key: g,
+                                            className: 'btn' + (gender === g ? ' active' : ''),
+                                            onClick: () => setGender(g)
+                                        }, g === 'all' ? 'Todos' : g)
+                                    )
+                                )
+                            ),
+                            e('div', null,
+                                e('div', { style: { fontSize: '11px', color: '#999', marginBottom: '8px', letterSpacing: '1px', textTransform: 'uppercase' } }, 'Categoría'),
+                                e('select', { value: category, onChange: (evt) => setCategory(evt.target.value) },
+                                    e('option', { value: 'all' }, 'Todas'),
+                                    e('option', { value: 'JEANS TERMINADOS' }, 'JEANS TERMINADOS'),
+                                    e('option', { value: 'CAMISAS' }, 'CAMISAS'),
+                                    e('option', { value: 'PANTALONES' }, 'PANTALONES'),
+                                    e('option', { value: 'BUZOS' }, 'BUZOS'),
+                                    e('option', { value: 'PIJAMAS' }, 'PIJAMAS'),
+                                    e('option', { value: 'VESTIDOS' }, 'VESTIDOS')
+                                )
+                            ),
+                            e('div', null,
+                                e('div', { style: { fontSize: '11px', color: '#999', marginBottom: '8px', letterSpacing: '1px', textTransform: 'uppercase' } }, 'Talla'),
+                                e('select', { value: size, onChange: (evt) => setSize(evt.target.value) },
+                                    e('option', { value: 'all' }, 'Todas'),
+                                    ['S', 'M', 'L', 'XL', '8', '10', '12', '14'].map(sz => e('option', { key: sz, value: sz }, sz))
+                                )
+                            )
+                        )
+                    ),
+
+                    e('table', null,
+                        e('thead', null,
+                            e('tr', null,
+                                e('th', null, 'Producto'),
+                                e('th', null, 'Género'),
+                                e('th', null, 'Talla'),
+                                e('th', { className: 'text-right' }, 'Ventas'),
+                                e('th', { className: 'text-right' }, 'Rotación'),
+                                e('th', { className: 'text-right' }, 'Tendencia')
+                            )
+                        ),
+                        e('tbody', null,
+                            filtered.map(item => e('tr', { key: item.id },
+                                e('td', null, item.product),
+                                e('td', null, item.g),
+                                e('td', null, item.s),
+                                e('td', { className: 'text-right' }, item.sales),
+                                e('td', { className: 'text-right rotation' }, item.rotation + 'x'),
+                                e('td', { className: 'text-right' + (item.trend === 'up' ? ' up' : ' down') }, item.trend === 'up' ? '↑' : '↓')
+                            ))
+                        )
+                    )
+                )
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById('root')).render(e(Dashboard));
+    </script>
+</body>
+</html>
