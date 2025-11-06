@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Dashboard</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --background: #ffffff;
+            --foreground: #1a1a1a;
+            --card: #f9f9f9;
+            --border: #e5e5e5;
+            --muted-foreground: #666666;
+            --primary: #1E3A8A;
+            --primary-foreground: #ffffff;
+            --destructive: #ef4444;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background-color: var(--background);
+            color: var(--foreground);
+            line-height: 1.5;
+        }
+
+        button, select {
+            font-family: inherit;
+        }
+
+        table {
+            border-collapse: collapse;
+        }
+
+        .container {
+            max-width: 80rem;
+            margin: 0 auto;
+            padding: 2.5rem;
+        }
+
+        .header {
+            padding-bottom: 3rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 300;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 0.875rem;
+            color: var(--muted-foreground);
+            font-weight: 300;
+            letter-spacing: 0.1em;
+        }
+
+        .grid-kpi {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .card {
+            padding: 2rem;
+            border: 1px solid var(--border);
+            background-color: var(--card);
+            border-radius: 0.375rem;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .kpi-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--muted-foreground);
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .kpi-value {
+            font-size: 2.25rem;
+            font-weight: 300;
+            color: var(--foreground);
+        }
+
+        .kpi-change {
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            color: var(--primary);
+            margin-top: 0.5rem;
+        }
+
+        .filters {
+            margin-bottom: 3rem;
+        }
+
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .filter-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--muted-foreground);
+            font-weight: 500;
+        }
+
+        .filter-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .filter-btn {
+            border-radius: 0.375rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border: 1px solid var(--border);
+            background-color: transparent;
+            color: var(--foreground);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn.active {
+            border-color: var(--primary);
+            background-color: var(--primary);
+            color: var(--primary-foreground);
+        }
+
+        .filter-select {
+            width: 100%;
+            border-radius: 0.375rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            background-color: white;
+            border: 1px solid var(--border);
+            color: var(--foreground);
+            cursor: pointer;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 1.5rem;
+        }
+
+        table {
+            width: 100%;
+            font-size: 0.875rem;
+        }
+
+        th {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--muted-foreground);
+            font-weight: 500;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--foreground);
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .rotation-value {
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .trend-up {
+            color: var(--primary);
+        }
+
+        .trend-down {
+            color: var(--destructive);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script>
+        const e = React.createElement;
+        const { useState } = React;
+
+        function TrendingUp() {
+            return e('span', { className: 'trend-up' }, '↑');
+        }
+
+        function TrendingDown() {
+            return e('span', { className: 'trend-down' }, '↓');
+        }
+
+        function Dashboard() {
+            const [gender, setGender] = useState('all');
+            const [category, setCategory] = useState('all');
+            const [size, setSize] = useState('all');
+
+            const data = [
+                { id: 1, product: 'JEANS TERMINADOS', g: 'Mujer', s: 'M', sales: 480, rotation: 8.2, trend: 'up' },
+                { id: 2, product: 'CAMISAS', g: 'Hombre', s: 'L', sales: 320, rotation: 6.5, trend: 'up' },
+                { id: 3, product: 'PANTALONES', g: 'Mujer', s: 'S', sales: 290, rotation: 5.8, trend: 'up' },
+                { id: 4, product: 'BUZOS', g: 'Niño', s: '12', sales: 215, rotation: 4.2, trend: 'down' },
+                { id: 5, product: 'VESTIDOS', g: 'Niña', s: '8', sales: 245, rotation: 5.1, trend: 'up' },
+                { id: 6, product: 'PIJAMAS', g: 'Mujer', s: 'M', sales: 180, rotation: 3.8, trend: 'down' },
+            ];
+
+            const kpis = [
+                { title: 'Más Vendidos', value: '248', change: '+12.5%' },
+                { title: 'Stock Crítico', value: '34', change: '-8.2%' },
+                { title: 'Rotación Promedio', value: '6.8x', change: '+3.1%' },
+                { title: 'Total Inventario', value: '12,847', change: '+2.4%' },
+            ];
+
+            const filtered = data.filter(item => {
+                if (gender !== 'all' && item.g !== gender) return false;
+                if (category !== 'all' && item.product !== category) return false;
+                if (size !== 'all' && item.s !== size) return false;
+                return true;
+            });
+
+            return e('main', { style: { minHeight: '100vh', backgroundColor: 'var(--background)' } },
+                e('div', { className: 'container' },
+                    // Header
+                    e('div', { className: 'header' },
+                        e('h1', null, 'Inventory'),
+                        e('p', null, 'Análisis inteligente de rotación y stock')
+                    ),
+
+                    // KPIs
+                    e('div', { className: 'grid-kpi' },
+                        kpis.map(kpi => 
+                            e('div', { key: kpi.title, className: 'card' },
+                                e('div', { className: 'kpi-title' }, kpi.title),
+                                e('div', { className: 'kpi-value' }, kpi.value),
+                                e('div', { className: 'kpi-change' }, kpi.change + ' vs mes anterior')
+                            )
+                        )
+                    ),
+
+                    // Filters
+                    e('div', { className: 'card filters' },
+                        e('h3', { className: 'kpi-title' }, 'Filtros'),
+                        e('div', { className: 'filter-row' },
+                            e('div', { className: 'filter-group' },
+                                e('label', { className: 'filter-label' }, 'Género'),
+                                e('div', { className: 'filter-buttons' },
+                                    ['all', 'Mujer', 'Hombre', 'Niño', 'Niña'].map(g =>
+                                        e('button', {
+                                            key: g,
+                                            className: 'filter-btn' + (gender === g ? ' active' : ''),
+                                            onClick: () => setGender(g)
+                                        }, g === 'all' ? 'Todos' : g)
+                                    )
+                                )
+                            ),
+                            e('div', { className: 'filter-group' },
+                                e('label', { className: 'filter-label' }, 'Categoría'),
+                                e('select', {
+                                    className: 'filter-select',
+                                    value: category,
+                                    onChange: (evt) => setCategory(evt.target.value)
+                                },
+                                    e('option', { value: 'all' }, 'Todas'),
+                                    ['JEANS TERMINADOS', 'CAMISAS', 'PANTALONES', 'BUZOS', 'PIJAMAS', 'VESTIDOS'].map(cat =>
+                                        e('option', { key: cat, value: cat }, cat)
+                                    )
+                                )
+                            ),
+                            e('div', { className: 'filter-group' },
+                                e('label', { className: 'filter-label' }, 'Talla'),
+                                e('select', {
+                                    className: 'filter-select',
+                                    value: size,
+                                    onChange: (evt) => setSize(evt.target.value)
+                                },
+                                    e('option', { value: 'all' }, 'Todas'),
+                                    ['S', 'M', 'L', 'XL', '8', '10', '12', '14'].map(sz =>
+                                        e('option', { key: sz, value: sz }, sz)
+                                    )
+                                )
+                            )
+                        )
+                    ),
+
+                    // Table
+                    e('div', { className: 'card' },
+                        e('h3', { className: 'kpi-title' }, 'Rotación de Productos'),
+                        e('p', { style: { fontSize: '0.75rem', color: 'var(--muted-foreground)', marginBottom: '1.5rem' } }, 'Análisis detallado de movimiento mensual'),
+                        e('div', { className: 'table-container' },
+                            e('table', null,
+                                e('thead', null,
+                                    e('tr', null,
+                                        e('th', null, 'Producto'),
+                                        e('th', null, 'Género'),
+                                        e('th', null, 'Talla'),
+                                        e('th', { className: 'text-right' }, 'Ventas'),
+                                        e('th', { className: 'text-right' }, 'Rotación'),
+                                        e('th', { className: 'text-center' }, 'Tendencia')
+                                    )
+                                ),
+                                e('tbody', null,
+                                    filtered.map(item =>
+                                        e('tr', { key: item.id },
+                                            e('td', null, item.product),
+                                            e('td', null, item.g),
+                                            e('td', null, item.s),
+                                            e('td', { className: 'text-right' }, item.sales),
+                                            e('td', { className: 'text-right rotation-value' }, item.rotation + 'x'),
+                                            e('td', { className: 'text-center' }, item.trend === 'up' ? e(TrendingUp) : e(TrendingDown))
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(e(Dashboard));
+    </script>
+</body>
+</html>
